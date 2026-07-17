@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>ThanhHai — Học Lập Trình Vũ Trụ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* ===== RESET & BIẾN ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --accent: #00e5ff;
+            --accent-glow: rgba(0, 229, 255, 0.4);
+            --bg: #0a0e1a;
+            --card: rgba(15, 23, 42, 0.85);
+            --border: rgba(0, 229, 255, 0.15);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --radius: 14px;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 16px;
+            overflow-x: hidden;
+        }
+
+        /* ===== NỀN VŨ TRỤ ===== */
+        #universe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            overflow: hidden;
+        }
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--d, 3s) infinite ease-in-out;
+        }
+        @keyframes twinkle {
+            0%,
+            100% {
+                opacity: 0.15;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        .shooting-star {
+            position: absolute;
+            width: 3px;
+            height: 80px;
+            background: linear-gradient(to bottom, #fff, transparent);
+            transform: rotate(-35deg);
+            animation: fall var(--s, 4s) linear infinite;
+            opacity: 0;
+            filter: drop-shadow(0 0 6px var(--accent));
+            left: var(--x, 50%);
+            top: var(--y, -10px);
+        }
+        @keyframes fall {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(-35deg);
+            }
+            10% {
+                opacity: 0.9;
+            }
+            60% {
+                transform: translate(-250px, 400px) rotate(-35deg);
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        .nebula {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .nebula-1 {
+            width: 500px;
+            height: 500px;
+            top: -10%;
+            right: -10%;
+            background: radial-gradient(circle, rgba(100, 50, 255, 0.12), transparent);
+        }
+        .nebula-2 {
+            width: 400px;
+            height: 400px;
+            bottom: -10%;
+            left: -10%;
+            background: radial-gradient(circle, rgba(255, 50, 100, 0.10), transparent);
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-radius: 0 0 16px 16px;
+        }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo span {
+            font-weight: 400;
+            font-size: 0.75rem;
+            -webkit-text-fill-color: var(--muted);
+            margin-left: 4px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .xp-display {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+            padding: 4px 14px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .theme-picker {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .theme-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .theme-dot:hover {
+            transform: scale(1.1);
+        }
+        .theme-dot.active {
+            border-color: #fff;
+            box-shadow: 0 0 12px currentColor;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 0;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 820px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .realm-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .realm-card:hover,
+        .realm-card.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+        .realm-card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .realm-card .name {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+        .realm-card .icon {
+            font-size: 1.6rem;
+        }
+        .realm-card .desc {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .realm-card .progress-text {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+        }
+        .realm-card .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 4px 0 10px;
+        }
+        .realm-card .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--accent), #7b2ffc);
+            transition: width 0.5s;
+            width: 0%;
+        }
+        .realm-card .btn-enter {
+            width: 100%;
+            padding: 8px 0;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #0b0d15;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: 0.2s;
+        }
+        .realm-card .btn-enter:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        /* MAP */
+        .map-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+        .map-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .map-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+        .map-grid::-webkit-scrollbar-thumb {
+            background: var(--accent-glow);
+            border-radius: 4px;
+        }
+        .map-node {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .map-node.locked {
+            color: #475569;
+            cursor: not-allowed;
+        }
+        .map-node.completed {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--success);
+            color: var(--success);
+        }
+        .map-node.current {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 14px var(--accent-glow);
+            animation: pulse-border 2s infinite;
+        }
+        .map-node.project {
+            grid-column: span 5;
+            aspect-ratio: auto;
+            padding: 8px;
+            margin-top: 6px;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px dashed #f59e0b;
+            color: #f59e0b;
+            font-size: 0.8rem;
+        }
+        .map-node.project.completed {
+            border-color: var(--success);
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.12);
+        }
+        .map-node.project.locked {
+            color: #475569;
+            border-color: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        @keyframes pulse-border {
+            0%,
+            100% {
+                border-color: var(--accent);
+            }
+            50% {
+                border-color: rgba(255, 255, 255, 0.7);
+            }
+        }
+
+        /* ===== MAIN WORKSPACE ===== */
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* LESSON INFO */
+        .lesson-info {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 700px) {
+            .lesson-info {
+                grid-template-columns: 1fr;
+            }
+        }
+        .lesson-info .left {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .lesson-info .left .title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .lesson-info .left .story {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.6;
+            border-left: 3px solid var(--accent);
+            padding-left: 12px;
+            font-style: italic;
+        }
+        .lesson-info .left .steps {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.7;
+        }
+        .lesson-info .left .steps .num {
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .lesson-info .left .mission {
+            background: rgba(239, 68, 68, 0.06);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+        }
+        .lesson-info .left .mission .label {
+            color: var(--error);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .lesson-info .right {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .lesson-info .right .checklist {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        .lesson-info .right .checklist .item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            padding: 2px 0;
+            color: var(--muted);
+        }
+        .lesson-info .right .checklist .item.done {
+            color: var(--success);
+        }
+        .lesson-info .right .checklist .item .check {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid #2a314a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+        .lesson-info .right .checklist .item.done .check {
+            border-color: var(--success);
+            background: var(--success);
+            color: #0b0d15;
+        }
+        .lesson-info .right .preview-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 70px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            overflow: auto;
+        }
+        .lesson-info .right .preview-box iframe {
+            width: 100%;
+            min-height: 60px;
+            border: none;
+            background: transparent;
+        }
+        .lesson-info .right .preview-box .console {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #38bdf8;
+            white-space: pre-wrap;
+            width: 100%;
+        }
+
+        /* GHOST EDITOR */
+        .editor-wrapper {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .editor-wrapper:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .editor-header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .editor-body {
+            position: relative;
+            min-height: 180px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            padding: 16px;
+        }
+        .ghost-layer {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            color: rgba(255, 255, 255, 0.12);
+            pointer-events: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            z-index: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .highlight-layer {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            pointer-events: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            z-index: 2;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .highlight-layer .correct {
+            color: var(--success);
+            text-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
+        }
+        .highlight-layer .incorrect {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.25);
+            text-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
+        }
+        .user-textarea {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: transparent;
+            caret-color: #fff;
+            resize: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            z-index: 3;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            width: calc(100% - 32px);
+        }
+        .editor-footer {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: 0.2s;
+        }
+        .btn-hint {
+            background: rgba(255, 215, 0, 0.12);
+            color: #ffd700;
+        }
+        .btn-hint:hover {
+            background: rgba(255, 215, 0, 0.2);
+        }
+        .btn-char {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+        }
+        .btn-char:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .btn-check {
+            background: var(--accent);
+            color: #0b0d15;
+            font-weight: 700;
+        }
+        .btn-check:hover {
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: scale(1.02);
+        }
+        .btn-check:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .btn-clear {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+        .btn-clear:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* ===== POPUP ===== */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 8, 16, 0.85);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .popup-box {
+            background: var(--card);
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 40px var(--accent-glow);
+            border-radius: 18px;
+            padding: 32px 28px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .popup-box .emoji {
+            font-size: 4rem;
+            display: inline-block;
+            animation: bounce 1s infinite alternate;
+        }
+        @keyframes bounce {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-10px);
+            }
+        }
+        .popup-box h2 {
+            margin: 12px 0 6px;
+            color: var(--accent);
+            font-family: 'Orbitron', sans-serif;
+        }
+        .popup-box p {
+            color: var(--muted);
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+        .popup-box .btn {
+            padding: 10px 32px;
+            font-size: 0.95rem;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            header {
+                padding: 8px 14px;
+            }
+            .logo {
+                font-size: 1.1rem;
+            }
+            .xp-display {
+                font-size: 11px;
+                padding: 2px 10px;
+            }
+            .theme-dot {
+                width: 18px;
+                height: 18px;
+            }
+            .container {
+                padding: 8px 0;
+                gap: 12px;
+            }
+            .lesson-info {
+                padding: 14px;
+            }
+            .editor-body {
+                min-height: 130px;
+                padding: 12px;
+            }
+            .ghost-layer,
+            .highlight-layer,
+            .user-textarea {
+                top: 12px;
+                left: 12px;
+                right: 12px;
+                bottom: 12px;
+                font-size: 0.85rem;
+            }
+            .user-textarea {
+                width: calc(100% - 24px);
+            }
+            .btn {
+                font-size: 0.7rem;
+                padding: 4px 12px;
+            }
+            .map-grid {
+                gap: 4px;
+            }
+            .map-node {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NỀN VŨ TRỤ -->
+    <div id="universe"></div>
+    <div class="nebula nebula-1"></div>
+    <div class="nebula nebula-2"></div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">ThanhHai <span>// 4 REALMS</span></div>
+        <div class="header-right">
+            <div class="theme-picker" id="themePicker"></div>
+            <div class="xp-display"><i class="fas fa-star"></i> XP <span id="xpDisplay">0</span> 🔥 <span id="xpTotal">0</span></div>
+        </div>
+    </header>
+
+    <!-- CONTAINER -->
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div id="realmsContainer"></div>
+            <div class="map-section">
+                <div class="map-title"><span id="mapTitle">BÀI HỌC (0/55)</span> <span id="mapRealm">HTML</span></div>
+                <div class="map-grid" id="mapGrid"></div>
+            </div>
+        </div>
+
+        <!-- MAIN -->
+        <main>
+            <!-- LESSON INFO -->
+            <div class="lesson-info" id="lessonInfo">
+                <div class="left">
+                    <div class="title" id="lessonTitle">Bài 1: Thẻ H1 - Tiêu đề GAME START</div>
+                    <div class="story" id="lessonStory">Bạn đang xây dựng giao diện cho thế giới ThanhHai. Bài 1 là mảnh ghép để tạo nên thẻ h1 - tiêu đề game start.</div>
+                    <div class="steps" id="lessonSteps">
+                        <div><span class="num">①</span> Hiểu thẻ: <code>&lt;h1&gt;GAME START&lt;/h1&gt;</code> là cú pháp bạn cần.</div>
+                        <div><span class="num">②</span> Gõ theo ghost: Hệ thống hiện chữ mờ phía sau.</div>
+                        <div><span class="num">③</span> Kiểm tra: Live Preview hiện kết quả.</div>
+                        <div><span class="num">④</span> Hoàn thành: Bấm KIỂM TRA để nhận XP.</div>
+                    </div>
+                    <div class="mission">
+                        <div class="label">🎯 NHIỆM VỤ</div>
+                        <div id="lessonMission">Tạo chính xác giao diện: Thẻ H1 - Tiêu đề GAME START</div>
+                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;" id="lessonRequired">Yêu cầu phải chứa: <code>&lt;h1&gt;, &lt;/h1&gt;</code></div>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="checklist" id="checklist">
+                        <div style="font-weight:700;font-size:0.8rem;color:var(--muted);margin-bottom:4px;">✅ CHECKLIST</div>
+                        <div class="item" id="check1"><span class="check"><i class="fas fa-check"></i></span> Chứa "<span id="check1Text">&lt;h1&gt;</span>"</div>
+                        <div class="item" id="check2"><span class="check"><i class="fas fa-check"></i></span> Chứa "<span id="check2Text">&lt;/h1&gt;</span>"</div>
+                        <div class="item" id="check3"><span class="check"><i class="fas fa-check"></i></span> Độ chính xác ≥90% (<span id="accuracyDisplay">0</span>%)</div>
+                    </div>
+                    <div class="preview-box" id="previewBox">
+                        <span style="color:var(--muted);">Gõ code để xem preview...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GHOST EDITOR -->
+            <div class="editor-wrapper">
+                <div class="editor-header">
+                    <span id="editorLang">HTML</span>
+                    <span>Hiện mở: <span id="statusText">BẬT</span> · <span id="matchDisplay">0%</span> khớp</span>
+                </div>
+                <div class="editor-body">
+                    <div class="ghost-layer" id="ghostLayer">&lt;h1&gt;GAME START&lt;/h1&gt;</div>
+                    <div class="highlight-layer" id="highlightLayer"></div>
+                    <textarea class="user-textarea" id="userTextarea" spellcheck="false" autocomplete="off" autofocus></textarea>
+                </div>
+                <div class="editor-footer">
+                    <div class="btn-group">
+                        <button class="btn btn-hint" onclick="useHint()"><i class="fas fa-lightbulb"></i> Gợi ý +10</button>
+                        <button class="btn btn-char" onclick="autoType()"><i class="fas fa-chevron-right"></i> Gõ 1 ký tự</button>
+                        <button class="btn btn-clear" onclick="clearInput()"><i class="fas fa-undo"></i> Xóa</button>
+                    </div>
+                    <button class="btn btn-check" id="checkBtn" onclick="checkLesson()">KIỂM TRA</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- POPUP -->
+    <div class="popup-overlay" id="popup">
+        <div class="popup-box">
+            <div class="emoji">🚀</div>
+            <h2>VƯỢT ẢI THÀNH CÔNG!</h2>
+            <p id="popupText">Bạn đã nhận được +10 XP và mở khóa bài tiếp theo.</p>
+            <button class="btn btn-check" onclick="closePopup()">TIẾP TỤC</button>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // 1. DỮ LIỆU BÀI HỌC (55 bài + Project cho mỗi realm)
+        // =============================================
+        function generateLessons(realm) {
+            const lessons = [];
+            const templates = {
+                html: [
+                    { title: 'Thẻ H1 - Tiêu đề GAME START', code: '<h1>GAME START</h1>', check: ['<h1>', '</h1>'],
+                        story: 'Bạn đang xây dựng giao diện cho thế giới ThanhHai. Bài 1 là mảnh ghép để tạo nên thẻ h1 - tiêu đề game start.',
+                        steps: ['Hiểu thẻ: <code>&lt;h1&gt;GAME START&lt;/h1&gt;</code> là cú pháp bạn cần.',
+                            'Gõ theo ghost: Hệ thống hiện chữ mờ phía sau.', 'Kiểm tra: Live Preview hiện kết quả.',
+                            'Hoàn thành: Bấm KIỂM TRA để nhận XP.'
+                        ], task: 'Tạo chính xác giao diện: Thẻ H1 - Tiêu đề GAME START',
+                        required: 'Yêu cầu phải chứa: <code>&lt;h1&gt;, &lt;/h1&gt;</code>' },
+                    { title: 'CSS Color - Màu chữ neon', code: '<h1 style="color: #ff0080;">GAME START</h1>',
+                        check: ['style="color: #ff0080;"', '</h1>'],
+                        story: 'Màu sắc làm cho game của bạn sinh động hơn. Bài này học cách đổi màu chữ bằng CSS.',
+                        steps: ['Hiểu thuộc tính color trong CSS.', 'Thêm style="color: #ff0080;" vào thẻ h1.',
+                            'Xem preview màu hồng neon.'
+                        ], task: 'Tạo thẻ h1 với màu hồng neon',
+                        required: 'Yêu cầu phải chứa: <code>style="color: #ff0080;"</code>' },
+                    { title: 'CSS Background - Nền gradient', code: '<div style="background: linear-gradient(45deg, #ff0080, #7b2ffc);">HELLO</div>',
+                        check: ['background:', 'linear-gradient'],
+                        story: 'Nền gradient tạo hiệu ứng chuyển màu đẹp mắt cho game của bạn.',
+                        steps: ['Hiểu thuộc tính background.', 'Thêm linear-gradient với 2 màu.',
+                            'Xem preview nền chuyển màu.'
+                        ], task: 'Tạo thẻ div với nền gradient',
+                        required: 'Yêu cầu phải chứa: <code>background:, linear-gradient</code>' },
+                    { title: 'HTML Button - Nút bấm', code: '<button style="padding:12px 24px;background:#00d4ff;border:none;border-radius:8px;color:#fff;font-weight:700;">CLICK ME</button>',
+                        check: ['<button', '</button>'], story: 'Nút bấm là yếu tố quan trọng trong game. Bài này học cách tạo nút.',
+                        steps: ['Hiểu thẻ button.', 'Thêm text vào giữa thẻ button.', 'Xem preview nút bấm.'],
+                        task: 'Tạo nút bấm với chữ "CLICK ME"',
+                        required: 'Yêu cầu phải chứa: <code>&lt;button&gt;, &lt;/button&gt;</code>' },
+                    { title: 'CSS Flexbox - Bố cục linh hoạt', code: '<div style="display:flex;gap:16px;justify-content:center;"><div>Box 1</div><div>Box 2</div></div>',
+                        check: ['display:flex', 'gap:'],
+                        story: 'Flexbox giúp sắp xếp bố cục game. Bài này học cách dùng display:flex.',
+                        steps: ['Hiểu thuộc tính display:flex.', 'Thêm gap để tạo khoảng cách.',
+                            'Xem preview các phần tử nằm ngang.'
+                        ], task: 'Tạo bố cục flex với 2 phần tử',
+                        required: 'Yêu cầu phải chứa: <code>display:flex</code>' },
+                    { title: 'CSS Margin - Khoảng cách ngoài', code: '<div style="margin:20px;padding:10px;background:#333;">Box</div>',
+                        check: ['margin:', 'padding:'],
+                        story: 'Margin và padding giúp tạo khoảng cách trong bố cục game.',
+                        steps: ['Hiểu margin và padding.', 'Thêm margin:20px; padding:10px;',
+                            'Xem preview khoảng cách.'
+                        ], task: 'Tạo thẻ div với margin và padding',
+                        required: 'Yêu cầu phải chứa: <code>margin:, padding:</code>' },
+                    { title: 'CSS Border - Viền đẹp', code: '<div style="border:2px solid #00d4ff;padding:10px;">Border Box</div>',
+                        check: ['border:', 'solid'],
+                        story: 'Border tạo khung viền cho các phần tử trong game.',
+                        steps: ['Hiểu thuộc tính border.', 'Thêm border:2px solid #00d4ff;',
+                            'Xem preview viền xanh dương.'
+                        ], task: 'Tạo thẻ div với viền xanh dương',
+                        required: 'Yêu cầu phải chứa: <code>border:, solid</code>' },
+                    { title: 'HTML Input - Ô nhập liệu', code: '<input type="text" placeholder="Nhập tên..." style="padding:8px;border-radius:8px;border:1px solid #00d4ff;background:transparent;color:#fff;">',
+                        check: ['<input', 'type="text"'],
+                        story: 'Input là ô nhập dữ liệu cho người chơi nhập tên, mật khẩu, v.v.',
+                        steps: ['Hiểu thẻ input.', 'Thêm type="text" và placeholder.', 'Xem preview ô nhập.'],
+                        task: 'Tạo ô nhập liệu với placeholder',
+                        required: 'Yêu cầu phải chứa: <code>&lt;input, type="text"</code>' },
+                    { title: 'HTML Image - Chèn ảnh', code: '<img src="https://via.placeholder.com/100" alt="Placeholder" style="border-radius:12px;">',
+                        check: ['<img', 'src='], story: 'Thẻ img hiển thị hình ảnh trong game.',
+                        steps: ['Hiểu thẻ img.', 'Thêm src và alt.', 'Xem preview ảnh.'],
+                        task: 'Chèn ảnh placeholder', required: 'Yêu cầu phải chứa: <code>&lt;img, src=</code>' },
+                ],
+                python: [
+                    { title: 'Python Cơ Bản - Hello World', code: 'print("Hello World")', check: ['print',
+                            'Hello World'
+                        ], story: 'Hành trình lập trình Python bắt đầu với câu lệnh in ra màn hình.',
+                        steps: ['Hiểu hàm print().', 'Gõ print("Hello World")', 'Xem kết quả hiển thị.'],
+                        task: 'In ra dòng chữ "Hello World"',
+                        required: 'Yêu cầu phải chứa: <code>print, Hello World</code>' },
+                    { title: 'Biến Python', code: 'name = "ThanhHai"\nprint(name)', check: ['name =', 'print'],
+                        story: 'Biến lưu trữ dữ liệu trong game. Bài này học cách tạo biến.',
+                        steps: ['Hiểu cách gán biến.', 'Tạo biến name = "ThanhHai"', 'In ra biến.'],
+                        task: 'Tạo biến name và in ra', required: 'Yêu cầu phải chứa: <code>name =, print</code>' },
+                    { title: 'If Else Python', code: 'x = 10\nif x > 5:\n    print("Lon hon 5")\nelse:\n    print("Nho hon hoac bang 5")',
+                        check: ['if', 'else'], story: 'Điều kiện giúp game đưa ra quyết định.',
+                        steps: ['Hiểu cú pháp if.', 'Thêm điều kiện x > 5.', 'In ra kết quả.'],
+                        task: 'Kiểm tra số x > 5', required: 'Yêu cầu phải chứa: <code>if, else</code>' },
+                    { title: 'Vòng lặp For', code: 'for i in range(1, 6):\n    print(i)', check: ['for', 'print'],
+                        story: 'Vòng lặp lặp lại hành động. Bài này học for loop.',
+                        steps: ['Hiểu cú pháp for.', 'Lặp từ 1 đến 5.', 'In ra từng số.'],
+                        task: 'In số từ 1 đến 5', required: 'Yêu cầu phải chứa: <code>for, print</code>' },
+                    { title: 'Hàm Python', code: 'def greet(name):\n    return "Hello " + name\nprint(greet("ThanhHai"))',
+                        check: ['def', 'return'], story: 'Hàm đóng gói code để tái sử dụng.',
+                        steps: ['Hiểu cú pháp def.', 'Tạo hàm greet().', 'Gọi hàm và in kết quả.'],
+                        task: 'Tạo hàm greet() trả về "Hello"',
+                        required: 'Yêu cầu phải chứa: <code>def, return</code>' },
+                ],
+                lua: [
+                    { title: 'Lua Cơ Bản - Hello Roblox', code: 'print("Hello Roblox")', check: ['print',
+                            'Hello Roblox'
+                        ], story: 'Lua là ngôn ngữ của Roblox. Bắt đầu với câu lệnh in ra.',
+                        steps: ['Hiểu hàm print() trong Lua.', 'Gõ print("Hello Roblox")', 'Xem kết quả.'],
+                        task: 'In ra "Hello Roblox"', required: 'Yêu cầu phải chứa: <code>print, Hello Roblox</code>' },
+                    { title: 'Biến Lua', code: 'local name = "ThanhHai"\nprint(name)', check: ['local', 'print'],
+                        story: 'Biến trong Lua dùng để lưu dữ liệu.', steps: ['Hiểu cách tạo biến local.',
+                            'Tạo biến local name = "ThanhHai"', 'In ra biến.'
+                        ], task: 'Tạo biến local name và in ra',
+                        required: 'Yêu cầu phải chứa: <code>local, print</code>' },
+                    { title: 'If Else Lua', code: 'x = 10\nif x > 5 then\n    print("Lon hon 5")\nelse\n    print("Nho hon hoac bang 5")\nend',
+                        check: ['if', 'then', 'else'],
+                        story: 'Điều kiện trong Lua giúp game ra quyết định.',
+                        steps: ['Hiểu cú pháp if then.', 'Thêm điều kiện x > 5.', 'In ra kết quả.'],
+                        task: 'Kiểm tra số x > 5', required: 'Yêu cầu phải chứa: <code>if, then, else</code>' },
+                    { title: 'Vòng lặp For Lua', code: 'for i = 1, 5 do\n    print(i)\nend', check: ['for', 'do',
+                            'end'
+                        ], story: 'Vòng lặp trong Lua lặp lại hành động.',
+                        steps: ['Hiểu cú pháp for do.', 'Lặp từ 1 đến 5.', 'In ra từng số.'],
+                        task: 'In số từ 1 đến 5', required: 'Yêu cầu phải chứa: <code>for, do, end</code>' },
+                    { title: 'Hàm Lua', code: 'function greet(name)\n    return "Hello " .. name\nend\nprint(greet("ThanhHai"))',
+                        check: ['function', 'return'], story: 'Hàm trong Lua đóng gói code để tái sử dụng.',
+                        steps: ['Hiểu cú pháp function.', 'Tạo hàm greet().', 'Gọi hàm và in kết quả.'],
+                        task: 'Tạo hàm greet() trả về "Hello"',
+                        required: 'Yêu cầu phải chứa: <code>function, return</code>' },
+                ],
+                cpp: [
+                    { title: 'C++ Cơ Bản - Hello World', code: '#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello World";\n    return 0;\n}',
+                        check: ['#include <iostream>', 'cout'],
+                        story: 'C++ là ngôn ngữ mạnh mẽ. Bắt đầu với câu lệnh cout.',
+                        steps: ['Hiểu #include <iostream>', 'Sử dụng cout << "Hello World"', 'Xem kết quả.'],
+                        task: 'In ra "Hello World" bằng cout',
+                        required: 'Yêu cầu phải chứa: <code>#include <iostream>, cout</code>' },
+                    { title: 'Biến C++', code: '#include <iostream>\nusing namespace std;\nint main() {\n    string name = "ThanhHai";\n    cout << name;\n    return 0;\n}',
+                        check: ['string', 'cout'], story: 'Biến trong C++ lưu trữ dữ liệu.',
+                        steps: ['Hiểu cách khai báo biến.', 'Tạo biến string name = "ThanhHai"', 'In ra biến.'],
+                        task: 'Tạo biến name và in ra', required: 'Yêu cầu phải chứa: <code>string, cout</code>' },
+                    { title: 'If Else C++', code: '#include <iostream>\nusing namespace std;\nint main() {\n    int x = 10;\n    if (x > 5) {\n        cout << "Lon hon 5";\n    } else {\n        cout << "Nho hon hoac bang 5";\n    }\n    return 0;\n}',
+                        check: ['if', 'else'], story: 'Điều kiện trong C++ giúp game ra quyết định.',
+                        steps: ['Hiểu cú pháp if.', 'Thêm điều kiện x > 5.', 'In ra kết quả.'],
+                        task: 'Kiểm tra số x > 5', required: 'Yêu cầu phải chứa: <code>if, else</code>' },
+                    { title: 'Vòng lặp For C++', code: '#include <iostream>\nusing namespace std;\nint main() {\n    for (int i = 1; i <= 5; i++) {\n        cout << i;\n    }\n    return 0;\n}',
+                        check: ['for', 'cout'], story: 'Vòng lặp trong C++ lặp lại hành động.',
+                        steps: ['Hiểu cú pháp for.', 'Lặp từ 1 đến 5.', 'In ra từng số.'],
+                        task: 'In số từ 1 đến 5', required: 'Yêu cầu phải chứa: <code>for, cout</code>' },
+                    { title: 'Hàm C++', code: '#include <iostream>\nusing namespace std;\nstring greet() {\n    return "Hello ThanhHai";\n}\nint main() {\n    cout << greet();\n    return 0;\n}',
+                        check: ['string', 'return'], story: 'Hàm trong C++ đóng gói code để tái sử dụng.',
+                        steps: ['Hiểu cú pháp hàm.', 'Tạo hàm greet().', 'Gọi hàm và in kết quả.'],
+                        task: 'Tạo hàm greet() trả về "Hello"',
+                        required: 'Yêu cầu phải chứa: <code>string, return</code>' },
+                ]
+            };
+
+            const realmTemplates = templates[realm] || templates.html;
+            // Tạo 55 bài bằng cách lặp lại mẫu (đảm bảo đủ 55 bài)
+            for (let i = 0; i < 55; i++) {
+                const tpl = realmTemplates[i % realmTemplates.length];
+                const num = i + 1;
+                const title = tpl.title + (i >= realmTemplates.length ? ` (Lặp ${Math.floor(i / realmTemplates.length) + 1})` :
+                    '');
+                lessons.push({
+                    id: num,
+                    title: title,
+                    code: tpl.code,
+                    check: tpl.check,
+                    story: tpl.story,
+                    steps: tpl.steps,
+                    task: tpl.task,
+                    required: tpl.required,
+                    isProject: false
+                });
+            }
+
+            // Project (bài 56)
+            const projects = {
+                html: {
+                    title: 'PROJECT: Menu Game & Shop',
+                    code: `<div class="game-menu">\n  <h1>THANH HAI SPACE</h1>\n  <div>\n    <span>Vàng: 1500 🪙</span> | <span>Kim Cương: 50 💎</span>\n  </div>\n  <button>CHƠI NGAY</button>\n  <button>CỬA HÀNG</button>\n</div>`,
+                    check: ['<h1>', '<button'],
+                    story: 'Nhiệm vụ tối thượng! Kết hợp toàn bộ 55 bài học để xây dựng Menu Game hoàn chỉnh với vàng, kim cương, shop.',
+                    steps: ['Sử dụng thẻ <h1> cho tiêu đề.', 'Tạo phần hiển thị vàng và kim cương.',
+                        'Có ít nhất 2 nút bấm: CHƠI NGAY và CỬA HÀNG.',
+                        'Gợi ý: dùng XP để xem giải pháp mẫu.'
+                    ], task: 'Tạo Menu Game với vàng và kim cương',
+                    required: 'Yêu cầu phải chứa: <code>&lt;h1&gt;, &lt;button&gt;</code>', isProject: true
+                },
+                python: {
+                    title: 'PROJECT: Quản lý Nhân Vật & AI',
+                    code: `team = ["Captain", "AI Bot", "Navigator"]\n\ndef predict_win(power):\n    if power > 80:\n        return "Chiến thắng 99%"\n    else:\n        return "Chiến thắng 50%"\n\nfor hero in team:\n    print("Phi hành gia: " + hero)\nprint("Dự báo: " + predict_win(85))`,
+                    check: ['def', 'predict_win'],
+                    story: 'Sử dụng Python để quản lý đội ngũ phi hành gia và AI dự báo chiến thắng.',
+                    steps: ['Định nghĩa danh sách nhân vật.', 'Viết hàm dự báo chiến thắng.',
+                        'Duyệt và hiển thị thông tin.'
+                    ], task: 'Quản lý nhân vật và AI dự báo',
+                    required: 'Yêu cầu phải chứa: <code>def, predict_win</code>', isProject: true
+                },
+                lua: {
+                    title: 'PROJECT: Hiệu ứng Sao Băng Roblox',
+                    code: `local meteor = Instance.new("Part")\nmeteor.Parent = workspace\nmeteor.Position = Vector3.new(0, 100, 0)\n\nwhile true do\n    meteor.BrickColor = BrickColor.random()\n    task.wait(0.5)\nend`,
+                    check: ['Instance.new', 'while true do'],
+                    story: 'Tạo hiệu ứng sao băng lấp lánh trong Roblox với Lua.',
+                    steps: ['Tạo Part mới.', 'Thiết lập vị trí.', 'Thay đổi màu liên tục.'],
+                    task: 'Tạo hiệu ứng sao băng Roblox',
+                    required: 'Yêu cầu phải chứa: <code>Instance.new, while true do</code>', isProject: true
+                },
+                cpp: {
+                    title: 'PROJECT: Hệ thống Shop Vàng & Kim Cương',
+                    code: `#include <iostream>\nusing namespace std;\n\nint main() {\n    int gold = 1500;\n    int item_cost = 500;\n    if (gold >= item_cost) {\n        gold -= item_cost;\n        cout << "Mua hang thanh cong! Con lai: " << gold << " gold";\n    } else {\n        cout << "Khong du tien!";\n    }\n    return 0;\n}`,
+                    check: ['gold', 'item_cost', 'cout'],
+                    story: 'Xây dựng hệ thống shop mua bán bằng C++, quản lý vàng và kim cương.',
+                    steps: ['Khai báo biến vàng và giá.', 'Kiểm tra số dư.', 'Xuất kết quả giao dịch.'],
+                    task: 'Tạo hệ thống shop mua bán',
+                    required: 'Yêu cầu phải chứa: <code>gold, item_cost, cout</code>', isProject: true
+                }
+            };
+            const proj = projects[realm] || projects.html;
+            lessons.push({
+                id: 56,
+                title: proj.title,
+                code: proj.code,
+                check: proj.check,
+                story: proj.story,
+                steps: proj.steps,
+                task: proj.task,
+                required: proj.required,
+                isProject: true
+            });
+
+            return lessons;
+        }
+
+        const REALMS = {
+            html: {
+                id: 'html',
+                name: 'HTML Realm',
+                icon: '🌐',
+                desc: 'Game UI Builder — Xây giao diện game, shop, menu',
+                lessons: generateLessons('html')
+            },
+            python: {
+                id: 'python',
+                name: 'Python Realm',
+                icon: '🐍',
+                desc: 'Logic Core — Lập trình logic game, AI',
+                lessons: generateLessons('python')
+            },
+            lua: {
+                id: 'lua',
+                name: 'Lua Realm',
+                icon: '🌙',
+                desc: 'Roblox Script — Script Roblox, hiệu ứng',
+                lessons: generateLessons('lua')
+            },
+            cpp: {
+                id: 'cpp',
+                name: 'C++ Realm',
+                icon: '⚡',
+                desc: 'High Performance — Lập trình game, hệ thống',
+                lessons: generateLessons('cpp')
+            }
+        };
+
+        // =============================================
+        // 2. STATE
+        // =============================================
+        let state = {
+            currentRealm: 'html',
+            currentLessonId: 1,
+            xp: 0,
+            completed: {
+                html: 0,
+                python: 0,
+                lua: 0,
+                cpp: 0
+            },
+            projectDone: {
+                html: false,
+                python: false,
+                lua: false,
+                cpp: false
+            },
+            theme: '#00e5ff'
+        };
+
+        let typedChars = '';
+        let targetCode = '';
+        let currentLessonData = null;
+
+        // =============================================
+        // 3. KHỞI TẠO
+        // =============================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            createStars();
+            createShootingStars();
+            renderThemePicker();
+            renderRealms();
+            loadLesson(state.currentRealm, state.currentLessonId);
+            updateXP();
+            setupEditor();
+        });
+
+        // =============================================
+        // 4. LƯU / TẢI
+        // =============================================
+        function saveState() {
+            try {
+                localStorage.setItem('thanhhai_space', JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem('thanhhai_space');
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    state = { ...state, ...saved };
+                }
+            } catch (e) {}
+        }
+
+        // =============================================
+        // 5. VŨ TRỤ
+        // =============================================
+        function createStars() {
+            const container = document.getElementById('universe');
+            for (let i = 0; i < 120; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.setProperty('--d', (Math.random() * 3 + 2) + 's');
+                container.appendChild(star);
+            }
+        }
+
+        function createShootingStars() {
+            const container = document.getElementById('universe');
+            for (let i = 0; i < 6; i++) {
+                const star = document.createElement('div');
+                star.className = 'shooting-star';
+                star.style.setProperty('--x', Math.random() * 100 + '%');
+                star.style.setProperty('--y', Math.random() * -20 + 'px');
+                star.style.setProperty('--s', (Math.random() * 3 + 3) + 's');
+                star.style.animationDelay = (i * 1.2) + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // =============================================
+        // 6. THEME
+        // =============================================
+        const THEMES = ['#00e5ff', '#ec4899', '#a855f7', '#10b981', '#eab308', '#ef4444', '#f1f5f9'];
+
+        function renderThemePicker() {
+            const container = document.getElementById('themePicker');
+            container.innerHTML = '';
+            THEMES.forEach(color => {
+                const dot = document.createElement('div');
+                dot.className = 'theme-dot' + (color === state.theme ? ' active' : '');
+                dot.style.background = color;
+                dot.dataset.color = color;
+                dot.onclick = () => setTheme(color);
+                container.appendChild(dot);
+            });
+        }
+
+        function setTheme(color) {
+            state.theme = color;
+            document.documentElement.style.setProperty('--accent', color);
+            document.documentElement.style.setProperty('--accent-glow', color + '66');
+            document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.color === color));
+            saveState();
+            // Cập nhật các thành phần UI
+            document.querySelectorAll('.realm-card .btn-enter, .btn-check').forEach(el => {
+                el.style.background = color;
+            });
+            document.querySelectorAll('.map-node.current').forEach(el => {
+                el.style.background = color + '33';
+                el.style.borderColor = color;
+                el.style.boxShadow = '0 0 14px ' + color + '66';
+            });
+        }
+
+        // =============================================
+        // 7. REALMS
+        // =============================================
+        function renderRealms() {
+            const container = document.getElementById('realmsContainer');
+            container.innerHTML = '';
+            Object.values(REALMS).forEach(realm => {
+                const completed = state.completed[realm.id] || 0;
+                const pct = Math.min(100, Math.round((completed / 55) * 100));
+                const isActive = state.currentRealm === realm.id;
+                const card = document.createElement('div');
+                card.className = 'realm-card' + (isActive ? ' active' : '');
+                card.innerHTML = `
+                    <div class="header">
+                        <div class="name">${realm.name}</div>
+                        <div class="icon">${realm.icon}</div>
+                    </div>
+                    <div class="desc">${realm.desc}</div>
+                    <div class="progress-text">
+                        <span>Level ${Math.floor(completed / 5) + 1}</span>
+                        <span>${completed}/55 (${pct}%)</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+                    <button class="btn-enter" onclick="switchRealm('${realm.id}')">VÀO HỌC →</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function switchRealm(realmId) {
+            state.currentRealm = realmId;
+            state.currentLessonId = 1;
+            saveState();
+            renderRealms();
+            loadLesson(realmId, state.currentLessonId);
+            updateXP();
+        }
+
+        // =============================================
+        // 8. LOAD LESSON
+        // =============================================
+        function loadLesson(realmId, lessonId) {
+            const realm = REALMS[realmId];
+            if (!realm) return;
+            const lesson = realm.lessons.find(l => l.id === lessonId);
+            if (!lesson) {
+                // Nếu chưa có bài, quay về bài 1
+                state.currentLessonId = 1;
+                saveState();
+                return loadLesson(realmId, 1);
+            }
+
+            currentLessonData = lesson;
+            targetCode = lesson.code;
+            typedChars = '';
+            state.currentLessonId = lessonId;
+
+            // Cập nhật UI
+            document.getElementById('lessonTitle').textContent = lesson.isProject ? '🏆 ' + lesson.title : 'Bài ' + lessonId +
+                ': ' + lesson.title;
+            document.getElementById('lessonStory').textContent = lesson.story;
+            document.getElementById('lessonSteps').innerHTML = lesson.steps.map((s, i) =>
+                `<div><span class="num">${String.fromCharCode(9312 + i)}</span> ${s}</div>`
+            ).join('');
+            document.getElementById('lessonMission').textContent = lesson.task;
+            document.getElementById('lessonRequired').innerHTML = lesson.required;
+
+            document.getElementById('check1Text').textContent = lesson.check[0] || '';
+            document.getElementById('check2Text').textContent = lesson.check[1] || '';
+            document.getElementById('check1').className = 'item';
+            document.getElementById('check2').className = 'item';
+            document.getElementById('check3').className = 'item';
+            document.getElementById('accuracyDisplay').textContent = '0';
+            document.getElementById('matchDisplay').textContent = '0%';
+            document.getElementById('checkBtn').disabled = true;
+
+            document.getElementById('editorLang').textContent = realmId.toUpperCase() + (lesson.isProject ? ' PROJECT' : '');
+            document.getElementById('ghostLayer').textContent = lesson.code;
+            document.getElementById('highlightLayer').innerHTML = '';
+            document.getElementById('userTextarea').value = '';
+            document.getElementById('previewBox').innerHTML = '<span style="color:var(--muted);">Gõ code để xem preview...</span>';
+
+            renderMap(realmId);
+            saveState();
+
+            // Tự động focus vào editor
+            document.getElementById('userTextarea').focus();
+        }
+
+        // =============================================
+        // 9. MAP
+        // =============================================
+        function renderMap(realmId) {
+            const realm = REALMS[realmId];
+            if (!realm) return;
+            const grid = document.getElementById('mapGrid');
+            grid.innerHTML = '';
+            const completed = state.completed[realmId] || 0;
+            const total = realm.lessons.length;
+
+            document.getElementById('mapTitle').textContent = `BÀI HỌC (${completed}/55)`;
+            document.getElementById('mapRealm').textContent = realmId.toUpperCase();
+
+            for (let i = 0; i < total; i++) {
+                const lesson = realm.lessons[i];
+                const node = document.createElement('div');
+                let cls = 'map-node';
+
+                if (lesson.isProject) {
+                    cls += ' project';
+                    if (state.projectDone[realmId]) cls += ' completed';
+                    else if (completed >= 55) cls += ' current';
+                    else cls += ' locked';
+                    node.textContent = state.projectDone[realmId] ? '🎉 PROJECT' : '🏆 PROJECT';
+                } else {
+                    const num = i + 1;
+                    if (num <= completed) cls += ' completed';
+                    else if (num === completed + 1) cls += ' current';
+                    else cls += ' locked';
+                    node.textContent = num;
+                }
+
+                node.className = cls;
+                if (!cls.includes('locked')) {
+                    node.onclick = () => {
+                        state.currentLessonId = lesson.id;
+                        loadLesson(realmId, lesson.id);
+                    };
+                }
+                grid.appendChild(node);
+            }
+        }
+
+        // =============================================
+        // 10. GHOST TYPING ENGINE
+        // =============================================
+        function setupEditor() {
+            const textarea = document.getElementById('userTextarea');
+            textarea.addEventListener('input', handleEditorInput);
+            textarea.addEventListener('scroll', syncScroll);
+            textarea.addEventListener('focus', () => {
+                document.querySelector('.editor-wrapper').style.borderColor = 'var(--accent)';
+            });
+            textarea.addEventListener('blur', () => {
+                document.querySelector('.editor-wrapper').style.borderColor = 'var(--border)';
+            });
+        }
+
+        function handleEditorInput() {
+            const textarea = document.getElementById('userTextarea');
+            const ghost = document.getElementById('ghostLayer');
+            const highlight = document.getElementById('highlightLayer');
+            const userText = textarea.value;
+            const ghostText = ghost.textContent;
+
+            let html = '';
+            let correct = 0;
+            const len = Math.min(userText.length, ghostText.length);
+
+            for (let i = 0; i < len; i++) {
+                if (userText[i] === ghostText[i]) {
+                    html += `<span class="correct">${escapeHtml(userText[i])}</span>`;
+                    correct++;
+                } else {
+                    html += `<span class="incorrect">${escapeHtml(userText[i])}</span>`;
+                }
+            }
+            // Nếu user gõ thừa
+            if (userText.length > ghostText.length) {
+                for (let i = ghostText.length; i < userText.length; i++) {
+                    html += `<span class="incorrect">${escapeHtml(userText[i])}</span>`;
+                }
+            }
+
+            highlight.innerHTML = html;
+            typedChars = userText;
+
+            const acc = ghostText.length > 0 ? Math.round((correct / ghostText.length) * 100) : 100;
+            document.getElementById('matchDisplay').textContent = acc + '%';
+            document.getElementById('accuracyDisplay').textContent = acc;
+
+            updateChecklist(acc);
+            updatePreview(userText);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function syncScroll() {
+            const textarea = document.getElementById('userTextarea');
+            const ghost = document.getElementById('ghostLayer');
+            const highlight = document.getElementById('highlightLayer');
+            ghost.scrollTop = textarea.scrollTop;
+            ghost.scrollLeft = textarea.scrollLeft;
+            highlight.scrollTop = textarea.scrollTop;
+            highlight.scrollLeft = textarea.scrollLeft;
+        }
+
+        function autoType() {
+            const textarea = document.getElementById('userTextarea');
+            const ghost = document.getElementById('ghostLayer');
+            const current = textarea.value.length;
+            if (current < ghost.textContent.length) {
+                textarea.value += ghost.textContent[current];
+                handleEditorInput();
+                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                textarea.focus();
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('userTextarea').value = '';
+            handleEditorInput();
+            document.getElementById('userTextarea').focus();
+        }
+
+        function useHint() {
+            if (state.xp < 10) {
+                alert('⚠️ Bạn không đủ XP để xem gợi ý (cần 10 XP).');
+                return;
+            }
+            state.xp -= 10;
+            updateXP();
+            saveState();
+            // Tự động gõ 5 ký tự đúng
+            for (let i = 0; i < 5; i++) autoType();
+        }
+
+        // =============================================
+        // 11. CHECKLIST & PREVIEW
+        // =============================================
+        function updateChecklist(acc) {
+            const lesson = currentLessonData;
+            if (!lesson) return;
+            const userText = document.getElementById('userTextarea').value;
+            const c1 = userText.includes(lesson.check[0] || '');
+            const c2 = lesson.check[1] ? userText.includes(lesson.check[1]) : true;
+            const c3 = acc >= 90;
+
+            document.getElementById('check1').className = 'item' + (c1 ? ' done' : '');
+            document.getElementById('check2').className = 'item' + (c2 ? ' done' : '');
+            document.getElementById('check3').className = 'item' + (c3 ? ' done' : '');
+
+            const allPass = c1 && c2 && c3;
+            document.getElementById('checkBtn').disabled = !allPass;
+            return allPass;
+        }
+
+        function updatePreview(userText) {
+            const box = document.getElementById('previewBox');
+            const realm = state.currentRealm;
+            const code = userText || targetCode;
+
+            if (realm === 'html') {
+                box.innerHTML = `<iframe srcdoc="${encodeURIComponent(code)}" style="width:100%;min-height:60px;border:none;"></iframe>`;
+            } else {
+                // Mô phỏng console cho Python/Lua/C++
+                let output = '';
+                if (code.includes('print') || code.includes('cout')) {
+                    if (code.includes('Hello World') || code.includes('Hello Roblox')) {
+                        output = '> Hello World\n>>> Process finished';
+                    } else if (code.includes('System Active')) {
+                        output = '> System Active\n>>> Process finished';
+                    } else if (code.includes('predict_win')) {
+                        output =
+                        '> Phi hành gia: Captain\nPhi hành gia: AI Bot\nPhi hành gia: Navigator\nDự báo: Chiến thắng 99%';
+                    } else if (code.includes('gold')) {
+                        output = '> Mua hang thanh cong! Con lai: 1000 gold';
+                    } else if (code.includes('Instance.new')) {
+                        output = '> [ROBLOX] Meteor effect created! Color changing...';
+                    } else {
+                        output = '> Script executed successfully.';
+                    }
+                } else {
+                    output = '> Sẵn sàng biên dịch...';
+                }
+                box.innerHTML = `<div class="console">${escapeHtml(output)}</div>`;
+            }
+        }
+
+        // =============================================
+        // 12. CHECK LESSON
+        // =============================================
+        function checkLesson() {
+            const lesson = currentLessonData;
+            if (!lesson) return;
+            const userText = document.getElementById('userTextarea').value;
+            const acc = parseInt(document.getElementById('accuracyDisplay').textContent) || 0;
+
+            const c1 = userText.includes(lesson.check[0] || '');
+            const c2 = lesson.check[1] ? userText.includes(lesson.check[1]) : true;
+
+            if (c1 && c2 && acc >= 90) {
+                // Hoàn thành
+                const realmId = state.currentRealm;
+                const isProject = lesson.isProject;
+
+                if (isProject) {
+                    if (!state.projectDone[realmId]) {
+                        state.xp += 100;
+                        state.projectDone[realmId] = true;
+                        document.getElementById('popupText').textContent = '🏆 Hoàn thành Project! +100 XP';
+                    } else {
+                        document.getElementById('popupText').textContent = '🔄 Làm lại Project thành công!';
+                    }
+                } else {
+                    const lessonId = lesson.id;
+                    if (lessonId > (state.completed[realmId] || 0)) {
+                        state.completed[realmId] = lessonId;
+                        state.xp += 10;
+                        document.getElementById('popupText').textContent = '✅ Hoàn thành bài! +10 XP';
+                    } else {
+                        document.getElementById('popupText').textContent = '🔄 Làm lại bài cũ thành công!';
+                    }
+                }
+
+                updateXP();
+                saveState();
+                renderRealms();
+                renderMap(realmId);
+                document.getElementById('checkBtn').disabled = true;
+                document.getElementById('popup').style.display = 'flex';
+            } else {
+                alert('❌ Chưa đạt yêu cầu. Kiểm tra lại code và độ chính xác.');
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+            const realmId = state.currentRealm;
+            const completed = state.completed[realmId] || 0;
+            // Tự động chuyển sang bài tiếp theo
+            let nextId = state.currentLessonId + 1;
+            const total = REALMS[realmId].lessons.length;
+            if (nextId > total) {
+                // Đã hoàn thành tất cả
+                alert('🎉 Chúc mừng! Bạn đã hoàn thành tất cả bài học và project của realm này!');
+                nextId = 1;
+            }
+            state.currentLessonId = nextId;
+            loadLesson(realmId, nextId);
+        }
+
+        // =============================================
+        // 13. XP
+        // =============================================
+        function updateXP() {
+            document.getElementById('xpDisplay').textContent = state.xp;
+            document.getElementById('xpTotal').textContent = state.xp;
+        }
+
+        // =============================================
+        // 14. KHỞI TẠO LẠI NẾU CẦN
+        // =============================================
+        console.log('🚀 ThanhHai Space loaded!');
+    </script>
+</body>
+</html>
